@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم مدیریت محتوای درسی</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 450px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-title {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .input-group:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .input-group:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .input-group:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .input-group:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .show-animation {
+            animation: expandDown 0.4s ease;
+        }
+
+        @keyframes expandDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 100px;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Main Page Styles */
+        .main-page {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .main-page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .menu-icon:hover .dot {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        .site-title {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+        }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .side-panel.open {
+            right: 0;
+        }
+
+        .side-panel.left {
+            right: auto;
+            left: -350px;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .side-panel.left.open {
+            left: 0;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        .panel-item {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: #f5f5f5;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(-5px);
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 50px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #764ba2;
+            transform: scale(1.02);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .card-video {
+            width: 100%;
+            max-height: 250px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        /* Admin Panel */
+        .admin-section {
+            display: none;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .admin-title {
+            font-size: 24px;
+            color: #667eea;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            border-radius: 20px;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .content-list {
+            margin-top: 30px;
+        }
+
+        .content-item {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .content-item:hover {
+            background: #e0e0e0;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .logout-btn.show {
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(240, 147, 251, 0.4);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .empty-state p {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-panel {
+                width: 280px;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .site-title {
+                font-size: 18px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginContainer">
+        <h2 class="login-title">ورود به سیستم</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="firstName">نام:</label>
+                <input type="text" id="firstName" required>
+            </div>
+            <div class="input-group">
+                <label for="lastName">نام خانوادگی:</label>
+                <input type="text" id="lastName" required>
+            </div>
+            <div class="input-group hidden" id="mobileGroup">
+                <label for="mobile">شماره موبایل:</label>
+                <input type="tel" id="mobile">
+            </div>
+            <div class="input-group hidden" id="adminCodeGroup">
+                <label for="adminCode">کد ادمین:</label>
+                <input type="password" id="adminCode">
+            </div>
+            <button type="submit" class="btn">ورود</button>
+        </form>
+    </div>
+
+    <!-- Main Page -->
+    <div class="main-page" id="mainPage">
+        <!-- Header -->
+        <div class="header">
+            <div class="menu-icon" id="leftMenu">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="site-title" id="siteTitle">سیستم مدیریت محتوای درسی</div>
+            <div class="menu-icon" id="rightMenu">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay" id="overlay"></div>
+
+        <!-- Right Side Panel -->
+        <div class="side-panel" id="rightPanel">
+            <div class="panel-header">منوی اصلی</div>
+            <div class="panel-content">
+                <div class="panel-item" onclick="showSection('home')">🏠 صفحه اصلی</div>
+                <div class="panel-item" onclick="showSection('settings')">⚙️ تنظیمات</div>
+                <div class="panel-item" onclick="showSection('about')">ℹ️ درباره ما</div>
+                <div class="panel-item" onclick="showSection('admin')" id="adminMenuItem" style="display: none;">👤 پنل ادمین</div>
+                <button class="logout-btn" id="logoutBtn" onclick="logout()">خروج از حساب</button>
+                <div class="back-btn" onclick="closePanel('right')">بازگشت به صفحه اصلی</div>
+            </div>
+        </div>
+
+        <!-- Left Side Panel -->
+        <div class="side-panel left" id="leftPanel">
+            <div class="panel-header">دسته‌بندی‌ها</div>
+            <div class="panel-content">
+                <div class="panel-item">📚 دروس ریاضی</div>
+                <div class="panel-item">🔬 دروس علوم</div>
+                <div class="panel-item">📖 ادبیات فارسی</div>
+                <div class="panel-item">🌍 مطالعات اجتماعی</div>
+                <div class="back-btn" onclick="closePanel('left')">بازگشت به صفحه اصلی</div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Home Section -->
+            <div id="homeSection">
+                <div class="content-grid" id="contentGrid">
+                    <div class="empty-state">
+                        <p>محتوایی برای نمایش وجود ندارد. لطفاً از پنل ادمین محتوا اضافه کنید.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Section -->
+            <div class="admin-section" id="adminSection">
+                <h3 class="admin-title">پنل مدیریت محتوا</h3>
+                
+                <!-- Change Site Title -->
+                <div class="form-group">
+                    <label>عنوان سایت:</label>
+                    <input type="text" id="newSiteTitle" placeholder="عنوان جدید سایت">
+                    <button class="btn-admin" onclick="changeSiteTitle()">تغییر عنوان</button>
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+
+                <!-- Add Content -->
+                <h4 style="margin-bottom: 20px; color: #667eea;">افزودن محتوای جدید</h4>
+                <div class="form-group">
+                    <label>عنوان محتوا:</label>
+                    <input type="text" id="contentTitle" placeholder="عنوان">
+                </div>
+                <div class="form-group">
+                    <label>متن محتوا:</label>
+                    <textarea id="contentText" placeholder="توضیحات..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>لینک تصویر:</label>
+                    <input type="text" id="contentImage" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                    <label>لینک ویدیو:</label>
+                    <input type="text" id="contentVideo" placeholder="https://example.com/video.mp4">
+                </div>
+                <button class="btn-admin" onclick="addContent()">افزودن محتوا</button>
+
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+
+                <!-- Content List -->
+                <h4 style="margin-bottom: 20px; color: #667eea;">محتواهای موجود</h4>
+                <div class="content-list" id="contentList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let isAdmin = false;
+        let contents = JSON.parse(localStorage.getItem('contents')) || [];
+        let siteTitle = localStorage.getItem('siteTitle') || 'سیستم مدیریت محتوای درسی';
+
+        // Initialize
+        document.getElementById('siteTitle').textContent = siteTitle;
+
+        // Login Form Handler
+        document.getElementById('firstName').addEventListener('input', checkForAdmin);
+        document.getElementById('lastName').addEventListener('input', checkForAdmin);
+
+        function checkForAdmin() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            
+            if (firstName === 'امیر حسین' && lastName === 'نادری') {
+                const mobileGroup = document.getElementById('mobileGroup');
+                const adminCodeGroup = document.getElementById('adminCodeGroup');
+                
+                if (mobileGroup.classList.contains('hidden')) {
+                    mobileGroup.classList.remove('hidden');
+                    mobileGroup.classList.add('show-animation');
+                    
+                    setTimeout(() => {
+                        adminCodeGroup.classList.remove('hidden');
+                        adminCodeGroup.classList.add('show-animation');
+                    }, 200);
+                }
+            } else {
+                document.getElementById('mobileGroup').classList.add('hidden');
+                document.getElementById('adminCodeGroup').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const adminCode = document.getElementById('adminCode').value;
+            
+            if (firstName === 'امیر حسین' && lastName === 'نادری' && adminCode === '1234') {
+                isAdmin = true;
+                document.getElementById('adminMenuItem').style.display = 'block';
+                document.getElementById('logoutBtn').classList.add('show');
+            } else {
+                isAdmin = false;
+            }
+            
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('mainPage').classList.add('active');
+            loadContents();
+        });
+
+        // Menu Handlers
+        document.getElementById('rightMenu').addEventListener('click', function() {
+            document.getElementById('rightPanel').classList.add('open');
+            document.getElementById('overlay').classList.add('active');
+        });
+
+        document.getElementById('leftMenu').addEventListener('click', function() {
+            document.getElementById('leftPanel').classList.add('open');
+            document.getElementById('overlay').classList.add('active');
+        });
+
+        document.getElementById('overlay').addEventListener('click', function() {
+            closePanel('right');
+            closePanel('left');
+        });
+
+        function closePanel(side) {
+            if (side === 'right') {
+                document.getElementById('rightPanel').classList.remove('open');
+            } else {
+                document.getElementById('leftPanel').classList.remove('open');
+            }
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        // Show Section
+        function showSection(section) {
+            closePanel('right');
+            
+            document.getElementById('homeSection').style.display = 'none';
+            document.getElementById('adminSection').classList.remove('active');
+            
+            if (section === 'home') {
+                document.getElementById('homeSection').style.display = 'block';
+            } else if (section === 'admin' && isAdmin) {
+                document.getElementById('adminSection').classList.add('active');
+                updateContentList();
+            } else if (section === 'settings') {
+                alert('بخش تنظیمات به زودی...');
+            } else if (section === 'about') {
+                alert('سیستم مدیریت محتوای درسی - نسخه 1.0');
+            }
+        }
+
+        // Change Site Title
+        function changeSiteTitle() {
+            const newTitle = document.getElementById('newSiteTitle').value.trim();
+            if (newTitle) {
+                siteTitle = newTitle;
+                document.getElementById('siteTitle').textContent = newTitle;
+                localStorage.setItem('siteTitle', newTitle);
+                document.getElementById('newSiteTitle').value = '';
+                alert('عنوان سایت با موفقیت تغییر کرد!');
+            }
+        }
+
+        // Add Content
+        function addContent() {
+            const title = document.getElementById('contentTitle').value.trim();
+            const text = document.getElementById('contentText').value.trim();
+            const image = document.getElementById('contentImage').value.trim();
+            const video = document.getElementById('contentVideo').value.trim();
+            
+            if (!title || !text) {
+                alert('لطفاً حداقل عنوان و متن را وارد کنید!');
+                return;
+            }
+            
+            const content = {
+                id: Date.now(),
+                title: title,
+                text: text,
+                image: image,
+                video: video
+            };
+            
+            contents.push(content);
+            localStorage.setItem('contents', JSON.stringify(contents));
+            
+            document.getElementById('contentTitle').value = '';
+            document.getElementById('contentText').value = '';
+            document.getElementById('contentImage').value = '';
+            document.getElementById('contentVideo').value = '';
+            
+            loadContents();
+            updateContentList();
+            alert('محتوا با موفقیت اضافه شد!');
+        }
+
+        // Delete Content
+        function deleteContent(id) {
+            if (confirm('آیا مطمئن هستید که می‌خواهید این محتوا را حذف کنید؟')) {
+                contents = contents.filter(c => c.id !== id);
+                localStorage.setItem('contents', JSON.stringify(contents));
+                loadContents();
+                updateContentList();
+            }
+        }
+
+        // Load Contents
+        function loadContents() {
+            const grid = document.getElementById('contentGrid');
+            
+            if (contents.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <p>محتوایی برای نمایش وجود ندارد. ${isAdmin ? 'لطفاً از پنل ادمین محتوا اضافه کنید.' : ''}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = contents.map((content, index) => `
+                <div class="content-card" style="animation-delay: ${index * 0.1}s">
+                    ${content.image ? `<img src="${content.image}" class="card-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23667eea\' width=\'300\' height=\'200\'/%3E%3C/svg%3E'">` : '<div class="card-image"></div>'}
+                    <div class="card-body">
+                        <h3 class="card-title">${content.title}</h3>
+                        <p class="card-text">${content.text}</p>
+                        ${content.video ? `<video class="card-video" controls><source src="${content.video}" type="video/mp4">مرورگر شما از ویدیو پشتیبانی نمی‌کند.</video>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update Content List (Admin Panel)
+        function updateContentList() {
+            const list = document.getElementById('contentList');
+            
+            if (contents.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999;">هیچ محتوایی وجود ندارد</p>';
+                return;
+            }
+            
+            list.innerHTML = contents.map(content => `
+                <div class="content-item">
+                    <div>
+                        <strong>${content.title}</strong>
+                        <p style="color: #666; margin-top: 5px;">${content.text.substring(0, 50)}...</p>
+                    </div>
+                    <button class="btn-admin btn-delete" onclick="deleteContent(${content.id})">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟')) {
+                location.reload();
+            }
+        }
+
+        // Initial Load
+        loadContents();
+    </script>
+</body>
+</html>
